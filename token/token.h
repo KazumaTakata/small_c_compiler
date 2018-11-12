@@ -20,7 +20,10 @@ enum TokenType
     RETURN,
     NEGATION,
     BCOMP,
-    LNEGATION
+    LNEGATION,
+    ADD,
+    MULTI,
+    DIV
 };
 
 enum TokenType LookupIdent(char *ident);

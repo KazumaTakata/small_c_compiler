@@ -8,6 +8,9 @@
 #include "../ast/ast.h"
 #include "../token/token.h"
 
+struct Factory *ParseFactory(struct Parser *p);
+struct Expression *ParseExpression(struct Parser *p);
+
 struct Parser
 {
     struct Lexer *l;
@@ -30,31 +33,110 @@ struct Parser *createParser(struct Lexer *l)
     return p;
 }
 
-struct Expression *ParseExpression(struct Parser *p)
+struct Factory *ParseFactory(struct Parser *p)
 {
     if (p->curtoken->Type == INT)
     {
-        struct Expression *expression = (struct Expression *)malloc(sizeof(struct Expression));
-        expression->token = p->curtoken->Type;
-        expression->value = atoi(p->curtoken->Literal);
-        return expression;
+        struct Factory *factory = (struct Factory *)malloc(sizeof(struct Factory));
+        factory->type = VALUE;
+        factory->token = p->curtoken->Type;
+        factory->value = atoi(p->curtoken->Literal);
+        return factory;
+    }
+    else if (p->curtoken->Type == LPAREN)
+    {
+        struct Factory *factory = (struct Factory *)malloc(sizeof(struct Factory));
+        NextToken(p);
+        struct Expression *expression = ParseExpression(p);
+        factory->expression = expression;
     }
     else
     {
-        struct Expression *expression = (struct Expression *)malloc(sizeof(struct Expression));
+        struct Factory *factory = (struct Factory *)malloc(sizeof(struct Factory));
 
         enum TokenType type = p->curtoken->Type;
         if (type == NEGATION || type == LNEGATION || type == BCOMP)
         {
-            expression->Unary = type;
+            factory->type = PREFIX;
+            factory->Unary = type;
             NextToken(p);
-            struct Expression *exp = ParseExpression(p);
-            expression->right = exp;
+            struct Factory *exp = ParseFactory(p);
+            factory->right = exp;
         }
 
-        return expression;
+        return factory;
     }
 }
+
+struct Term *ParseTerm(struct Parser *p)
+{
+    struct Factory *leftterm = ParseFactory(p);
+    struct Term *term = (struct Term *)malloc(sizeof(struct Term));
+    term->left = leftterm;
+
+    NextToken(p);
+
+    int firstflag = 0;
+
+    while (p->curtoken->Type == MULTI || p->curtoken->Type == DIV)
+    {
+        if (firstflag == 0)
+        {
+            term->Binary = p->curtoken->Type;
+            firstflag += 1;
+            NextToken(p);
+            struct Factory *rightterm = ParseFactory(p);
+            term->right = rightterm;
+        }
+        else
+        {
+            struct Term *Newterm = (struct Term *)malloc(sizeof(struct Term));
+            Newterm->Binary = p->curtoken->Type;
+            NextToken(p);
+            struct Factory *rightterm = ParseFactory(p);
+            Newterm->Tleft = term;
+            Newterm->right = rightterm;
+            term = Newterm;
+        }
+    };
+
+    return term;
+};
+
+struct Expression *ParseExpression(struct Parser *p)
+{
+    struct Term *leftterm = ParseTerm(p);
+    struct Expression *expression = (struct Expression *)malloc(sizeof(struct Expression));
+    expression->left = leftterm;
+
+    NextToken(p);
+
+    int firstflag = 0;
+
+    while (p->curtoken->Type == ADD || p->curtoken->Type == NEGATION)
+    {
+        if (firstflag == 0)
+        {
+            expression->Binary = p->curtoken->Type;
+            firstflag += 1;
+            NextToken(p);
+            struct Term *rightterm = ParseTerm(p);
+            expression->right = rightterm;
+        }
+        else
+        {
+            struct Expression *Newexpression = (struct Expression *)malloc(sizeof(struct Expression));
+            Newexpression->Binary = p->curtoken->Type;
+            NextToken(p);
+            struct Term *rightterm = ParseTerm(p);
+            Newexpression->Eleft = expression;
+            Newexpression->right = rightterm;
+            expression = Newexpression;
+        }
+    };
+
+    return expression;
+};
 
 struct Statement *ParseStatement(struct Parser *p)
 {

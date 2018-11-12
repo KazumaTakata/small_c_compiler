@@ -10,12 +10,37 @@ enum VariableType
     V_VOID
 };
 
-struct Expression
+enum NodeType
+{
+    PREFIX,
+    INFIX,
+    VALUE,
+};
+
+struct Factory
 {
     enum TokenType Unary;
     enum TokenType token;
+    enum NodeType type;
     int value;
-    struct Expression *right;
+    struct Factory *right;
+    struct Expression *expression;
+};
+
+struct Term
+{
+    enum TokenType Binary;
+    struct Factory *left;
+    struct Factory *right;
+    struct Term *Tleft;
+};
+
+struct Expression
+{
+    enum TokenType Binary;
+    struct Term *left;
+    struct Term *right;
+    struct Expression *Eleft;
 };
 
 struct Statement

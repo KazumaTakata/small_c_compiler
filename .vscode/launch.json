@@ -20,7 +20,7 @@
       "name": "Launch",
       "type": "lldb",
       "request": "launch",
-      "program": "${workspaceFolder}/generator/a.out"
+      "program": "${workspaceFolder}/parser/a.out"
     }
   ]
 }

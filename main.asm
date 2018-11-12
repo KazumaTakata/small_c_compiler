@@ -5,5 +5,8 @@ _main:
 	 mov rbp, rsp
 	 sub rsp, 16
 	 mov rax, 2
+	 cmp rax, 0
+	 mov rax, 0
+	 sete al
 	 leave
 	 ret

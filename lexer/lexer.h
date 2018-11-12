@@ -116,12 +116,27 @@ struct Token *nextToken(struct Lexer *l)
         break;
     case '-':
         token = createToken(NEGATION, &l->ch);
+        readChar(l);
         break;
     case '~':
         token = createToken(BCOMP, &l->ch);
+        readChar(l);
         break;
     case '!':
         token = createToken(LNEGATION, &l->ch);
+        readChar(l);
+        break;
+    case '+':
+        token = createToken(ADD, &l->ch);
+        readChar(l);
+        break;
+    case '*':
+        token = createToken(MULTI, &l->ch);
+        readChar(l);
+        break;
+    case '/':
+        token = createToken(DIV, &l->ch);
+        readChar(l);
         break;
     case 0:
         token = createToken(EOFT, &l->ch);
