@@ -11,7 +11,7 @@ int main(void)
 {
     char input_string[] = "\
           int main(){ \
-            return 2;\
+            return !0;\
         }";
 
     struct Lexer *l = createLexer(input_string);

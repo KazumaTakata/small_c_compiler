@@ -9,11 +9,33 @@
 #include "../token/token.h"
 #include "../parser/parser.h"
 
-void GenerateExpression(struct Expression *expression)
+void GenerateExpression(struct Expression *expression, FILE *fp)
 {
-    if (expression->token == INT)
+    if (expression->type == VALUE)
     {
         int value = expression->value;
+        fprintf(fp, "\t mov rax, %d\n", expression->value);
+    }
+    else if (expression->type == PREFIX)
+    {
+        GenerateExpression(expression->right, fp);
+
+        enum TokenType unaryType = expression->Unary;
+
+        switch (unaryType)
+        {
+        case NEGATION:
+            fprintf(fp, "\t neg rax\n");
+            break;
+        case BCOMP:
+            fprintf(fp, "\t not rax\n");
+            break;
+        case LNEGATION:
+            fprintf(fp, "\t cmp rax, 0\n");
+            fprintf(fp, "\t mov rax, 0\n");
+            fprintf(fp, "\t sete al\n");
+            break;
+        }
     }
 };
 
@@ -22,7 +44,7 @@ void GenerateStatement(struct Statement *statement, FILE *fp)
     if (statement->token == RETURN)
     {
         struct Expression *expression = statement->expression;
-        fprintf(fp, "\t mov rax, %d\n", expression->value);
+        GenerateExpression(expression, fp);
         fprintf(fp, "\t leave\n");
         fprintf(fp, "\t ret\n");
     }
