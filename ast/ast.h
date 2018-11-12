@@ -17,21 +17,21 @@ enum NodeType
     VALUE,
 };
 
-struct Factory
+struct Factor
 {
     enum TokenType Unary;
     enum TokenType token;
     enum NodeType type;
     int value;
-    struct Factory *right;
+    struct Factor *right;
     struct Expression *expression;
 };
 
 struct Term
 {
     enum TokenType Binary;
-    struct Factory *left;
-    struct Factory *right;
+    struct Factor *left;
+    struct Factor *right;
     struct Term *Tleft;
 };
 

@@ -9,7 +9,7 @@
 int main(void)
 {
     char input_string[] = "int main(){ \
-            return -2 + 4;\
+            return -2 + 4 * 4;\
         }";
 
     struct Lexer *l = createLexer(input_string);

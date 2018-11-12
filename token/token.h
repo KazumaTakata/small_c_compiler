@@ -23,7 +23,8 @@ enum TokenType
     LNEGATION,
     ADD,
     MULTI,
-    DIV
+    DIV,
+    NONE,
 };
 
 enum TokenType LookupIdent(char *ident);

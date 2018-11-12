@@ -9,18 +9,18 @@
 #include "../token/token.h"
 #include "../parser/parser.h"
 
-void GenerateExpression(struct Expression *expression, FILE *fp)
+void GenerateFactor(struct Factor *factor, FILE *fp)
 {
-    if (expression->type == VALUE)
+    if (factor->type == VALUE)
     {
-        int value = expression->value;
-        fprintf(fp, "\t mov rax, %d\n", expression->value);
+        int value = factor->value;
+        fprintf(fp, "\t mov rax, %d\n", factor->value);
     }
-    else if (expression->type == PREFIX)
+    else if (factor->type == PREFIX)
     {
-        GenerateExpression(expression->right, fp);
+        GenerateFactor(factor->right, fp);
 
-        enum TokenType unaryType = expression->Unary;
+        enum TokenType unaryType = factor->Unary;
 
         switch (unaryType)
         {
@@ -38,6 +38,52 @@ void GenerateExpression(struct Expression *expression, FILE *fp)
         }
     }
 };
+
+void GenerateTerm(struct Term *term, FILE *fp)
+{
+    if (term->Tleft == NULL)
+    {
+        struct Factor *leftfactor = term->left;
+        GenerateFactor(leftfactor, fp);
+    }
+    else
+    {
+        struct Term *leftterm = term->Tleft;
+        GenerateTerm(leftterm, fp);
+    }
+    if (term->Binary != NONE)
+    {
+        fprintf(fp, "\t push rax\n");
+        struct Factor *rightfactor = term->right;
+        GenerateFactor(rightfactor, fp);
+
+        fprintf(fp, "\t pop rcx\n");
+        fprintf(fp, "\t imul rax, rcx\n");
+    };
+}
+
+void GenerateExpression(struct Expression *expression, FILE *fp)
+{
+    if (expression->Eleft == NULL)
+    {
+        struct Term *leftfactor = expression->left;
+        GenerateTerm(leftfactor, fp);
+    }
+    else
+    {
+        struct Expression *leftterm = expression->Eleft;
+        GenerateExpression(leftterm, fp);
+    };
+    if (expression->Binary != NONE)
+    {
+        struct Term *rightfactor = expression->right;
+        fprintf(fp, "\t push rax\n");
+        GenerateTerm(rightfactor, fp);
+
+        fprintf(fp, "\t pop rcx\n");
+        fprintf(fp, "\t add rax, rcx\n");
+    }
+}
 
 void GenerateStatement(struct Statement *statement, FILE *fp)
 {

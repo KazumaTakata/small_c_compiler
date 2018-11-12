@@ -8,6 +8,7 @@
 #include "../ast/ast.h"
 #include "../token/token.h"
 
+struct Parser;
 struct Factory *ParseFactory(struct Parser *p);
 struct Expression *ParseExpression(struct Parser *p);
 
@@ -33,45 +34,47 @@ struct Parser *createParser(struct Lexer *l)
     return p;
 }
 
-struct Factory *ParseFactory(struct Parser *p)
+struct Factor *ParseFactor(struct Parser *p)
 {
     if (p->curtoken->Type == INT)
     {
-        struct Factory *factory = (struct Factory *)malloc(sizeof(struct Factory));
-        factory->type = VALUE;
-        factory->token = p->curtoken->Type;
-        factory->value = atoi(p->curtoken->Literal);
-        return factory;
+        struct Factor *factor = (struct Factor *)malloc(sizeof(struct Factor));
+        factor->type = VALUE;
+        factor->token = p->curtoken->Type;
+        factor->value = atoi(p->curtoken->Literal);
+        return factor;
     }
     else if (p->curtoken->Type == LPAREN)
     {
-        struct Factory *factory = (struct Factory *)malloc(sizeof(struct Factory));
+        struct Factor *factor = (struct Factor *)malloc(sizeof(struct Factor));
         NextToken(p);
         struct Expression *expression = ParseExpression(p);
-        factory->expression = expression;
+        factor->expression = expression;
     }
     else
     {
-        struct Factory *factory = (struct Factory *)malloc(sizeof(struct Factory));
+        struct Factor *factor = (struct Factor *)malloc(sizeof(struct Factor));
 
         enum TokenType type = p->curtoken->Type;
         if (type == NEGATION || type == LNEGATION || type == BCOMP)
         {
-            factory->type = PREFIX;
-            factory->Unary = type;
+            factor->type = PREFIX;
+            factor->Unary = type;
             NextToken(p);
-            struct Factory *exp = ParseFactory(p);
-            factory->right = exp;
+            struct Factor *exp = ParseFactor(p);
+            factor->right = exp;
         }
 
-        return factory;
+        return factor;
     }
 }
 
 struct Term *ParseTerm(struct Parser *p)
 {
-    struct Factory *leftterm = ParseFactory(p);
+    struct Factor *leftterm = ParseFactor(p);
     struct Term *term = (struct Term *)malloc(sizeof(struct Term));
+    term->Binary = NONE;
+    term->Tleft = NULL;
     term->left = leftterm;
 
     NextToken(p);
@@ -85,7 +88,7 @@ struct Term *ParseTerm(struct Parser *p)
             term->Binary = p->curtoken->Type;
             firstflag += 1;
             NextToken(p);
-            struct Factory *rightterm = ParseFactory(p);
+            struct Factor *rightterm = ParseFactor(p);
             term->right = rightterm;
         }
         else
@@ -93,7 +96,7 @@ struct Term *ParseTerm(struct Parser *p)
             struct Term *Newterm = (struct Term *)malloc(sizeof(struct Term));
             Newterm->Binary = p->curtoken->Type;
             NextToken(p);
-            struct Factory *rightterm = ParseFactory(p);
+            struct Factor *rightterm = ParseFactor(p);
             Newterm->Tleft = term;
             Newterm->right = rightterm;
             term = Newterm;
@@ -107,11 +110,12 @@ struct Expression *ParseExpression(struct Parser *p)
 {
     struct Term *leftterm = ParseTerm(p);
     struct Expression *expression = (struct Expression *)malloc(sizeof(struct Expression));
+    expression->Binary = NONE;
+    expression->Eleft = NULL;
     expression->left = leftterm;
 
-    NextToken(p);
-
     int firstflag = 0;
+    expression->Binary = NONE;
 
     while (p->curtoken->Type == ADD || p->curtoken->Type == NEGATION)
     {
@@ -148,10 +152,9 @@ struct Statement *ParseStatement(struct Parser *p)
         NextToken(p);
         struct Expression *expression = ParseExpression(p);
 
-        NextToken(p);
         if (p->curtoken->Type != SEMICOLON)
         {
-            printf("error");
+            printf("not semicolon get %d\n", p->curtoken->Type);
         }
 
         NextToken(p);
@@ -181,7 +184,7 @@ struct Function *ParseFunction(struct Parser *p)
     NextToken(p);
     if (p->curtoken->Type != LBRACE)
     {
-        printf("error");
+        printf("not lbrace get %d\n", p->curtoken->Type);
     }
 
     NextToken(p);
@@ -191,7 +194,7 @@ struct Function *ParseFunction(struct Parser *p)
 
     if (p->curtoken->Type != RBRACE)
     {
-        printf("error");
+        printf("not rbrace get %d\n", p->curtoken->Type);
     }
 
     NextToken(p);

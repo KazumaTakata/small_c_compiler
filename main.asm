@@ -4,9 +4,10 @@ _main:
 	 push rbp
 	 mov rbp, rsp
 	 sub rsp, 16
-	 mov rax, 2
-	 cmp rax, 0
-	 mov rax, 0
-	 sete al
+	 mov rax, 3
+	 push rax
+	 mov rax, 4
+	 pop rcx
+	 add rax, rcx
 	 leave
 	 ret
