@@ -39,6 +39,21 @@ struct Expression *ParseExpression(struct Parser *p)
         expression->value = atoi(p->curtoken->Literal);
         return expression;
     }
+    else
+    {
+        struct Expression *expression = (struct Expression *)malloc(sizeof(struct Expression));
+
+        enum TokenType type = p->curtoken->Type;
+        if (type == NEGATION || type == LNEGATION || type == BCOMP)
+        {
+            expression->Unary = type;
+            NextToken(p);
+            struct Expression *exp = ParseExpression(p);
+            expression->right = exp;
+        }
+
+        return expression;
+    }
 }
 
 struct Statement *ParseStatement(struct Parser *p)
@@ -67,15 +82,16 @@ struct Statement *ParseStatement(struct Parser *p)
 struct Function *ParseFunction(struct Parser *p)
 {
     struct Function *function = (struct Function *)malloc(sizeof(struct Function));
+    function->next = NULL;
     if (p->curtoken->Type != INT)
     {
-        printf("error");
+        printf("not int get %d\n", p->curtoken->Type);
     }
     function->returnType = p->curtoken->Type;
     NextToken(p);
     if (p->curtoken->Type != IDENT)
     {
-        printf("error");
+        printf("not ident %d\n", p->curtoken->Type);
     }
     function->ident = p->curtoken->Literal;
     NextToken(p);

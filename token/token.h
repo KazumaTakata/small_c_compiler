@@ -8,8 +8,8 @@
 enum TokenType
 {
     ILLEGAL,
-    EOFT,
     IDENT,
+    EOFT,
     INT,
     ASSIGN,
     LBRACE,
@@ -18,6 +18,9 @@ enum TokenType
     RPAREN,
     SEMICOLON,
     RETURN,
+    NEGATION,
+    BCOMP,
+    LNEGATION
 };
 
 enum TokenType LookupIdent(char *ident);

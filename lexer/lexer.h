@@ -28,10 +28,11 @@ void readChar(struct Lexer *l)
     l->readPosition += 1;
 }
 
-struct Lexer *createLexer(char *input_string, int position)
+struct Lexer *createLexer(char *input_string)
 {
     struct Lexer *l = (struct Lexer *)malloc(sizeof(struct Lexer));
-    l->position = position;
+    l->position = 0;
+    l->readPosition = 0;
     l->input_string = strdup(input_string);
     readChar(l);
     return l;
@@ -112,6 +113,15 @@ struct Token *nextToken(struct Lexer *l)
     case ';':
         token = createToken(SEMICOLON, &l->ch);
         readChar(l);
+        break;
+    case '-':
+        token = createToken(NEGATION, &l->ch);
+        break;
+    case '~':
+        token = createToken(BCOMP, &l->ch);
+        break;
+    case '!':
+        token = createToken(LNEGATION, &l->ch);
         break;
     case 0:
         token = createToken(EOFT, &l->ch);

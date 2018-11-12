@@ -11,7 +11,7 @@ int main(void)
             return 2;\
         }";
 
-    struct Lexer *l = createLexer(input_string, 0);
+    struct Lexer *l = createLexer(input_string);
 
     struct Token *token = nextToken(l);
 

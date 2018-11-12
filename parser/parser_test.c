@@ -8,12 +8,11 @@
 
 int main(void)
 {
-    char input_string[] = "\
-          int main(){ \
+    char input_string[] = "int main(){ \
             return 2;\
         }";
 
-    struct Lexer *l = createLexer(input_string, 0);
+    struct Lexer *l = createLexer(input_string);
 
     struct Parser *p = createParser(l);
 

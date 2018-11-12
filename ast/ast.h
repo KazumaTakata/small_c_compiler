@@ -12,8 +12,10 @@ enum VariableType
 
 struct Expression
 {
+    enum TokenType Unary;
     enum TokenType token;
     int value;
+    struct Expression *right;
 };
 
 struct Statement
