@@ -25,6 +25,11 @@ enum TokenType
     MULTI,
     DIV,
     NONE,
+    GRETER,
+    LESS,
+    NOTEQUAL,
+    EQUAL,
+
 };
 
 enum TokenType LookupIdent(char *ident);

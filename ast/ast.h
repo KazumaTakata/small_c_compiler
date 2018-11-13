@@ -35,11 +35,27 @@ struct Term
     struct Term *Tleft;
 };
 
-struct Expression
+struct AdditiveExpression
 {
     enum TokenType Binary;
     struct Term *left;
     struct Term *right;
+    struct AdditiveExpression *Eleft;
+};
+
+struct RelationExpression
+{
+    enum TokenType Binary;
+    struct AdditiveExpression *left;
+    struct AdditiveExpression *right;
+    struct RelationExpression *Rleft;
+};
+
+struct Expression
+{
+    enum TokenType Binary;
+    struct RelationExpression *left;
+    struct RelationExpression *right;
     struct Expression *Eleft;
 };
 

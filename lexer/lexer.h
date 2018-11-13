@@ -122,9 +122,33 @@ struct Token *nextToken(struct Lexer *l)
         token = createToken(BCOMP, &l->ch);
         readChar(l);
         break;
+    case '=':
+        if (l->input_string[l->readPosition] == '=')
+        {
+            char equal[] = "==";
+            token = createToken(EQUAL, equal);
+            readChar(l);
+            readChar(l);
+        }
+        else
+        {
+            token = createToken(ASSIGN, &l->ch);
+            readChar(l);
+        }
+        break;
     case '!':
-        token = createToken(LNEGATION, &l->ch);
-        readChar(l);
+        if (l->input_string[l->readPosition] == '=')
+        {
+            char notequal[] = "!=";
+            token = createToken(NOTEQUAL, notequal);
+            readChar(l);
+            readChar(l);
+        }
+        else
+        {
+            token = createToken(LNEGATION, &l->ch);
+            readChar(l);
+        }
         break;
     case '+':
         token = createToken(ADD, &l->ch);

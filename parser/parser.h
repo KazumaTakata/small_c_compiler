@@ -106,10 +106,10 @@ struct Term *ParseTerm(struct Parser *p)
     return term;
 };
 
-struct Expression *ParseExpression(struct Parser *p)
+struct AdditiveExpression *ParseAdditiveExpression(struct Parser *p)
 {
     struct Term *leftterm = ParseTerm(p);
-    struct Expression *expression = (struct Expression *)malloc(sizeof(struct Expression));
+    struct AdditiveExpression *expression = (struct AdditiveExpression *)malloc(sizeof(struct AdditiveExpression));
     expression->Binary = NONE;
     expression->Eleft = NULL;
     expression->left = leftterm;
@@ -129,10 +129,82 @@ struct Expression *ParseExpression(struct Parser *p)
         }
         else
         {
-            struct Expression *Newexpression = (struct Expression *)malloc(sizeof(struct Expression));
+            struct AdditiveExpression *Newexpression = (struct AdditiveExpression *)malloc(sizeof(struct AdditiveExpression));
             Newexpression->Binary = p->curtoken->Type;
             NextToken(p);
             struct Term *rightterm = ParseTerm(p);
+            Newexpression->Eleft = expression;
+            Newexpression->right = rightterm;
+            expression = Newexpression;
+        }
+    };
+
+    return expression;
+};
+
+struct RelationExpression *ParseRelation(struct Parser *p)
+{
+    struct AdditiveExpression *leftterm = ParseAdditiveExpression(p);
+    struct RelationExpression *expression = (struct RelationExpression *)malloc(sizeof(struct RelationExpression));
+    expression->Binary = NONE;
+    expression->Rleft = NULL;
+    expression->left = leftterm;
+
+    int firstflag = 0;
+    expression->Binary = NONE;
+
+    while (p->curtoken->Type == GRETER || p->curtoken->Type == LESS)
+    {
+        if (firstflag == 0)
+        {
+            expression->Binary = p->curtoken->Type;
+            firstflag += 1;
+            NextToken(p);
+            struct AdditiveExpression *rightterm = ParseAdditiveExpression(p);
+            expression->right = rightterm;
+        }
+        else
+        {
+            struct RelationExpression *Newexpression = (struct RelationExpression *)malloc(sizeof(struct RelationExpression));
+            Newexpression->Binary = p->curtoken->Type;
+            NextToken(p);
+            struct AdditiveExpression *rightterm = ParseAdditiveExpression(p);
+            Newexpression->Rleft = expression;
+            Newexpression->right = rightterm;
+            expression = Newexpression;
+        }
+    };
+
+    return expression;
+};
+
+struct Expression *ParseExpression(struct Parser *p)
+{
+    struct RelationExpression *leftterm = ParseRelation(p);
+    struct Expression *expression = (struct Expression *)malloc(sizeof(struct Expression));
+    expression->Binary = NONE;
+    expression->Eleft = NULL;
+    expression->left = leftterm;
+
+    int firstflag = 0;
+    expression->Binary = NONE;
+
+    while (p->curtoken->Type == NOTEQUAL || p->curtoken->Type == EQUAL)
+    {
+        if (firstflag == 0)
+        {
+            expression->Binary = p->curtoken->Type;
+            firstflag += 1;
+            NextToken(p);
+            struct RelationExpression *rightterm = ParseRelation(p);
+            expression->right = rightterm;
+        }
+        else
+        {
+            struct Expression *Newexpression = (struct Expression *)malloc(sizeof(struct Expression));
+            Newexpression->Binary = p->curtoken->Type;
+            NextToken(p);
+            struct RelationExpression *rightterm = ParseRelation(p);
             Newexpression->Eleft = expression;
             Newexpression->right = rightterm;
             expression = Newexpression;
